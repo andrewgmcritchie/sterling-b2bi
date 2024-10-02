@@ -1,0 +1,1257 @@
+global:
+  license: true
+  licenseType: "non-prod"
+  image:
+    repository: "cp.icr.io/cp/ibm-b2bi/b2bi"
+    tag: "6.2.0.3"
+    digest:
+    pullPolicy: IfNotPresent
+    pullSecret: "si-ibm-registry"
+  networkPolicies:
+    ingress:
+      enabled: true
+      customPolicies:     
+ 
+    egress:
+      enabled: true
+      customPolicies:
+
+arch:
+  amd64: "2 - No Preference"
+  ppc64le: "2 - No Preference"
+  s390x: "2 - No Preference"
+
+serviceAccount:
+  name: default
+
+resourcesInit:
+  enabled: true 
+  image:
+    repository: "cp.icr.io/cp/ibm-b2bi/b2bi-resources"
+    tag: "6.2.0.3"
+    digest:
+    pullPolicy: "IfNotPresent"
+  command:
+
+persistence:
+  enabled: true
+  useDynamicProvisioning: True
+
+appResourcesPVC:
+  enabled: false     # must be false if resourcesInit is true
+  storageClassName: "ocs-storagecluster-cephfs"
+  selector:
+    label: ""
+    value: ""
+  accessMode: ReadOnlyMany
+  size: 1Gi
+  preDefinedResourcePVCName: 
+
+
+appLogsPVC:
+  enabled: true
+  storageClassName: "ocs-storagecluster-cephfs"
+  selector:
+    label: ""
+    value: ""
+  accessMode: ReadWriteMany
+  size: 1Gi
+  preDefinedLogsPVCName: 
+  
+appDocumentsPVC:
+  enabled: false
+  storageClassName: "ocs-storagecluster-cephfs"
+  selector:
+    label: ""
+    value: ""
+  accessMode: ReadWriteMany
+  size: 1Gi
+  enableVolumeClaimPerPod: false
+  preDefinedDocumentPVCName: 
+
+extraPVCs: []
+
+security:
+  supplementalGroups: [65534]
+  fsGroup:
+  fsGroupChangePolicy: "OnRootMismatch"
+  runAsUser:
+  runAsGroup:
+
+ingress:
+  enabled: true
+  controller: "nginx"
+  annotations: {}
+  port:
+
+dataSetup:
+  enabled: true
+  upgrade: false
+  image:
+    repository: "cp.icr.io/cp/ibm-b2bi/b2bi-dbsetup"
+    tag: "6.2.0.3"
+    digest:
+    pullPolicy: IfNotPresent
+    pullSecret: "si-ibm-registry"
+    extraLabels: {}
+
+env:
+  tz: "UTC"
+  upgradeCompatibilityVerified: false
+  debugMode: false
+  extraEnvs: []
+
+logs:
+  enableAppLogOnConsole: false
+      
+  # In standalone kubernetes environment, if PodSecurityPolicy is enabled and no default PSPs are present then change the value below to true.      
+applyPolicyToKubeSystem: false
+
+integrations:
+  seasIntegration:
+    isEnabled: false
+    seasVersion: "1.0"
+  itxIntegration:
+    enabled: false
+    dataSetup:
+      enabled: true
+    image:
+      repository: "cp.icr.io/cp/ibm-itx-rs"
+      tag: "10.1.2.0.20231130"
+      digest:
+      pullPolicy: IfNotPresent
+      pullSecret: "si-ibm-registry"
+    dataPVC:
+      name: itxdata
+      useDynamicProvisioning: true  
+      storageClassName: "ocs-storagecluster-cephfs"
+      selector:
+        label: ""
+        value: ""
+      accessMode: ReadWriteMany
+      size: 100Mi
+      preDefinedDataPVCName:
+    logsPVC:
+      name: itxlogs
+      useDynamicProvisioning: true
+      storageClassName: "ocs-storagecluster-cephfs"
+      selector:
+        label: ""
+        value: ""
+      accessMode: ReadWriteMany
+      size: 100Mi
+      preDefinedLogsPVCName:
+    log:
+      includeHostInLogNames: true
+      jniLog:
+        level: "none"
+      cmgrLog:
+        level: "none"
+  itxaIntegration:
+    enabled:  false
+    dataSetup:
+      enabled: true
+    image:
+      repository: "cp.icr.io/cp/ibm-itxa/itxa-runtime"
+      tag: "10.0.1.9-x86_64"
+      digest:
+      pullPolicy: IfNotPresent
+      pullSecret: "si-ibm-registry"
+    appSecret: "{'changed': True, 'result': {'kind': 'Secret', 'apiVersion': 'v1', 'metadata': {'name': 'si-itxa-secret', 'namespace': 'sterling-b2bi-dev01-app', 'uid': 'd2a3c632-3e43-41f1-9e4b-25f73b5a126e', 'resourceVersion': '115150', 'creationTimestamp': '2024-10-02T07:06:46Z', 'managedFields': [{'manager': 'OpenAPI-Generator', 'operation': 'Update', 'apiVersion': 'v1', 'time': '2024-10-02T07:06:46Z', 'fieldsType': 'FieldsV1', 'fieldsV1': {'f:data': {'.': {}, 'f:ITXA_PASSWORD': {}}, 'f:type': {}}}]}, 'data': {'ITXA_PASSWORD': 'passw0rd'}, 'type': 'Opaque'}, 'method': 'create', 'failed': False}"
+    secureDBConnection:
+      enabled: false
+      dbservercertsecretname: ""
+    persistence:
+      claims:
+        name: itxa-logs-pvc
+    sso:
+      host: ""
+      port: 443
+      ssl:
+        enabled: true
+    resourcesInit:
+      enabled: true
+      image:
+        repository: "cp.icr.io/cp/ibm-itxa/itxa-resources"
+        tag: "10.0.1.9-x86_64"
+        digest:
+        pullPolicy: "IfNotPresent"
+
+setupCfg:
+  upgrade: false
+  basePort: 50000
+  licenseAcceptEnableSfg: true
+  licenseAcceptEnableEbics: false
+  licenseAcceptEnableFinancialServices: false
+  licenseAcceptEnableFileOperation: true
+
+  systemPassphraseSecret: si-system-passphrase-secret
+  enableFipsMode: false
+  nistComplianceMode: "off"
+
+  dbVendor: DB2
+  dbHost: mydb2-ci.sterling-b2bi-dev01-db2.svc.cluster.local
+  dbPort: 50000
+  dbData: B2BI
+  dbDrivers: db2jcc4.jar
+  dbCreateSchema: true
+  oracleUseServiceName: false
+  usessl:  false
+  
+  dbSecret: si-db-secret
+  dbTruststore: 
+  dbTruststoreSecret: 
+  dbKeystore: 
+  dbKeystoreSecret: 
+    
+  connectionpoolFailoverEnable: false
+  adminEmailAddress: admin@company.com 
+  smtpHost: smtp.company.com
+  terminationGracePeriod: 30
+
+  jmsVendor: IBMMQ
+  jmsConnectionFactory: com.ibm.mq.jms.MQQueueConnectionFactory
+  jmsConnectionFactoryInstantiator:
+  jmsQueueName: DEV.QUEUE.1
+  jmsHost: mq-data.sterling-b2bi-dev01-mq.svc.cluster.local
+  jmsPort: 1414
+  jmsConnectionNameList: mq-data.sterling-b2bi-dev01-mq.svc.cluster.local(1414)
+  jmsChannel: DEV.APP.SVRCONN
+  jmsEnableSsl: False
+  jmsSecret: si-jms-secret
+  jmsKeystorePath:
+  jmsKeystoreSecret: 
+  jmsTruststorePath:
+  jmsTruststoreSecret: 
+  jmsCiphersuite:
+  jmsProtocol: TLSv1.2
+
+
+  libertyKeystoreLocation:
+  libertyKeystoreSecret: 
+  
+  libertyProtocol: TLSv1.2
+  libertySecret: si-liberty-secret
+  libertyJvmOptions:
+ 
+  defaultDocumentStorageType: DB
+ 
+  restartCluster: false
+  useSslForRmi: true
+  rmiTlsSecretName:
+
+  sapSncSecretName:
+  sapSncLibVendorName:
+  sapSncLibVersion:
+  sapSncLibName:  
+
+  launchClaServer: false
+
+asi:
+  replicaCount: 1
+  
+  env:
+    jvmOptions:
+    extraEnvs: []
+    
+  frontendService:
+    type: ClusterIP
+    sessionAffinityConfig:
+      timeoutSeconds: 10800
+
+    externalTrafficPolicy: Cluster
+    ports:
+      http: 
+        name: http
+        port: 35000
+        targetPort: http
+        nodePort: 30000
+        protocol: TCP
+      https: 
+        name: https
+        port: 35001
+        targetPort: https
+        nodePort: 30001
+        protocol: TCP
+      soa: 
+        name: soa
+        port: 35002
+        targetPort: soa
+        nodePort: 30002
+        protocol: TCP
+      soassl: 
+        name: soassl
+        port: 35003
+        targetPort: soassl
+        nodePort: 30003
+        protocol: TCP
+      restHttpAdapter: 
+        name: rest-adapter
+        port: 35007
+        targetPort: rest-adapter
+        nodePort: 30007
+        protocol: TCP
+      ops: 
+        name: ops
+        port: 35008
+        targetPort: ops
+        nodePort: 30008
+        protocol: TCP
+    extraPorts: 
+      - name: maptest-http
+        port: 35038
+        targetPort: 35038
+        nodePort: 30038
+        protocol: TCP
+      #-name: http-1
+      # port: 46000
+      # targetPort: http
+      # nodePort: 30100
+      # protocol: TCP
+    loadBalancerIP:  
+    loadBalancerSourceRanges: []
+      #- "143.231.0.0/16"
+    annotations: {}  
+  
+  backendService:
+    type: NodePort
+    sessionAffinity: None
+    sessionAffinityConfig:
+      timeoutSeconds: 10800
+
+    externalTrafficPolicy: Cluster
+    ports: []
+      #- name: adapter-1
+      #  port: 30201
+      #  targetPort: 30201
+      #  nodePort: 30201
+      #  protocol: TCP
+    portRanges:
+      - name: adapters
+        portRange: 30301-30310
+        targetPortRange: 30301-30310
+        nodePortRange: 30301-30310
+        protocol: TCP
+    loadBalancerIP:  
+    loadBalancerSourceRanges: []
+      #- "143.231.0.0/16"
+    annotations: {}
+      
+  livenessProbe:
+    initialDelaySeconds: 900
+    timeoutSeconds: 30
+    periodSeconds: 60
+
+  readinessProbe:
+    initialDelaySeconds: 600
+    timeoutSeconds: 5
+    periodSeconds: 60
+    command:
+    arg: []
+     
+  startupProbe:
+    initialDelaySeconds: 600
+    timeoutSeconds: 30
+    periodSeconds: 60
+    failureThreshold: 6
+       
+  internalAccess:
+    enableHttps: true
+    httpsPort:   
+    tlsSecretName:  
+      
+  externalAccess:
+    protocol: http
+    address: 
+    port:
+    
+  ingress:
+    internal:
+      host: "asi.dev01.apps.66fcceab098387a350aadb61.ocp.techzone.ibm.com"
+      tls:
+        enabled: true
+        secretName: ""
+      extraPaths: []
+      #  - routePrefix: "hello"
+      #    path: "/hello"
+      #    servicePort: "my-http"
+      #    enableHttps: false
+    external:
+      host: ""
+      tls:
+        enabled: true
+        secretName: ""
+      extraPaths: []
+      #  - routePrefix: "hello"
+      #    path: "/hello"
+      #    servicePort: "my-http"
+      #    enableHttps: false
+      #    access: "internal"
+
+  extraPVCs: []
+
+  extraInitContainers: []
+
+  resources: 
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+      ephemeral-storage: "4Gi"
+    requests:
+      cpu: 2000m
+      memory: 6Gi
+      ephemeral-storage: "2Gi"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 60
+
+  defaultPodDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  
+  # for pod Affinity and podAntiAffinity
+  extraLabels: {}
+    #asiLabel: asiValue
+  
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  podAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  
+  topologySpreadConstraints: []
+    #- maxSkew: 1
+    #  topologyKey: topology.kubernetes.io/zone
+    #  whenUnsatisfiable: DoNotSchedule
+    #- maxSkew: 1
+    #  topologyKey: kubernetes.io/hostname
+    #  whenUnsatisfiable: ScheduleAnyway
+    
+  # for Taints and Tolerations  
+  tolerations: [] 
+  #- key: "key1"
+  #  operator: "Equal"
+  #  value: "value1"
+  #  effect: "NoExecute"
+  #  tolerationSeconds: 3600
+  #- key: "key2"
+  #  operator: "Exists"
+  #  effect: "NoSchedule"
+
+  #To provide additional secrets inside application. If mountAsVolume is set to true, secret will be mounted as volume under /ibm/resources/<secretName> directory
+  #else it will exposed as environment variable
+  extraSecrets: []
+    #- mountAsVolume: true
+    #  secretName: jms-truststore
+    #- mountAsVolume: true
+    #  secretName: db-truststore
+
+  #To provide additional configmaps inside application. If mountAsVolume is set to true, configmap will be mounted as volume under /ibm/resources/<configMapName> directory
+  #else it will exposed as environment variable
+  extraConfigMaps: []
+    #- mountAsVolume: true
+    #  configMapName: my-configmap-1
+    #- mountAsVolume: false
+    #  configMapName: my-configmap-2
+  
+  #If myFG is hosted on HTTP Server adapter on ASI server, provide the internal port/protocol details used while configuring that.
+  myFgAccess:
+    myFgPort:
+    myFgProtocol:
+
+  hostAliases: []
+  #- ip: "127.0.0.1"
+  #  hostnames:
+  #  - "foo.local"
+  #  - "bar.local"
+  #- ip: "10.1.2.3"
+  #  hostnames:
+  #  - "foo.remote"
+  #  - "bar.remote"
+  
+  performanceTuning:
+    allocateMemToBI: false
+    allocateMemToSAP: false
+    allocateMemToCLA: false
+    threadsPerCore: 4
+    override: []
+      #- NOAPP.INITIAL_CYCLES_7=53
+      #- NOAPP.EXEC_CYCLE_7=53
+      #- NOAPP.MIN_POOL_SIZE_7=0
+      #- NOAPP.MAX_POOL_SIZE_7=13
+      #- NOAPP.RESOURCE_ALLOCATION_7=93
+  
+  networkPolicies:
+    ingress:
+      customPolicies:
+        - name: np-ingress-allow-asi-adapters
+          ports:
+            - protocol: TCP
+              port: 30301
+            - protocol: TCP
+              port: 30302
+            - protocol: TCP
+              port: 30303
+            - protocol: TCP
+              port: 30304
+            - protocol: TCP
+              port: 30305
+            - protocol: TCP
+              port: 30306
+            - protocol: TCP
+              port: 30307
+            - protocol: TCP
+              port: 30308
+            - protocol: TCP
+              port: 30309
+            - protocol: TCP
+              port: 30310
+      #- name:
+      #  fromSelectors:
+      #  - namespaceSelector:
+      #      matchLabels:
+      #        name: my-source-namespace
+      #    podSelector:
+      #      matchLabels:
+      #        app.kubernetes.io/name: my-consumer-pod
+      #  - podSelector:
+      #      matchLabels:
+      #        role: frontend
+      #  - ipBlock:
+      #      cidr: <IP Address>/<block size>
+      #      except:
+      #      - <IP Address>/<block size>
+      #  ports:
+      #   - protocol: TCP
+      #     port: 8443
+      #     endPort: 8450       
+    egress:
+      customPolicies:
+      #- name:
+      #  toSelectors:
+      #  - namespaceSelector:
+      #      matchLabels:
+      #        name: my-source-namespace
+      #    podSelector:
+      #      matchLabels:
+      #        app.kubernetes.io/name: my-consumer-pod
+      #  - podSelector:
+      #      matchLabels:
+      #        role: frontend
+      #  - ipBlock:
+      #      cidr: <IP Address>/<block size>
+      #      except:
+      #      - <IP Address>/<block size>
+      #  ports:
+      #   - protocol: TCP
+      #     port: 8443
+      #     endPort: 8450
+
+ac:
+  replicaCount: 1
+
+  env:
+    jvmOptions:
+    extraEnvs: []
+    
+  frontendService:
+    type: ClusterIP
+    sessionAffinityConfig:
+      timeoutSeconds: 10800
+    
+    externalTrafficPolicy: Cluster
+    ports:
+      http: 
+        name: http
+        port: 35004
+        targetPort: http
+        nodePort: 30004
+        protocol: TCP
+    extraPorts: []
+      #-name: http-1
+      # port: 37000
+      # targetPort: http
+      # nodePort: 30200
+      # protocol: TCP
+    loadBalancerIP:  
+    loadBalancerSourceRanges: []
+      #- "143.231.0.0/16"
+    annotations: {}  
+      
+  backendService:
+    type: LoadBalancer
+    sessionAffinity: None
+    sessionAffinityConfig:
+      timeoutSeconds: 10800
+
+    externalTrafficPolicy: Cluster
+    ports: []
+      #- name: adapter-1
+      #  port: 30401
+      #  targetPort: 30401
+      #  nodePort: 30401
+      #  protocol: TCP
+    portRanges:
+      - name: adapters
+        portRange: 30501-30600
+        targetPortRange: 30501-30600
+        nodePortRange: 30501-30600
+        protocol: TCP
+    loadBalancerIP:  
+    loadBalancerSourceRanges: []
+      #- "143.231.0.0/16"
+    annotations: {} 
+
+  livenessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 60
+    
+  readinessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 60
+    command:
+    arg: []
+
+  internalAccess:
+    enableHttps: true
+    tlsSecretName:
+      
+  ingress:
+    internal:
+      host: "ac.dev01.apps.66fcceab098387a350aadb61.ocp.techzone.ibm.com"
+      tls:
+        enabled: true
+        secretName: ""
+      extraPaths: []
+      #  - routePrefix: "hello"
+      #    path: "/hello"
+      #    servicePort: "my-http"
+      #    enableHttps: false
+    external:
+      host: ""
+      tls:
+        enabled: true
+        secretName: ""
+      extraPaths: []
+      #  - routePrefix: "hello"
+      #    path: "/hello"
+      #    servicePort: "my-http"
+      #    enableHttps: false
+      #    access: "internal"
+  
+  extraPVCs: []
+
+  extraInitContainers: []
+    #- name: wait-for-postgresql
+    #  image: "\{\{ .Values.init.image.repository \}\}:\{\{ .Values.init.image. \}\}"
+    #  imagePullPolicy: \{\{ .Values.init.image.pullPolicy \}\}
+    #  command:
+    #  shareVolume: false
+    #  localMountPath: 
+    #  appMountPath:
+
+  resources: 
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+      ephemeral-storage: "4Gi"
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+      ephemeral-storage: "2Gi"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 60
+
+  defaultPodDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  
+
+  extraLabels: {}
+    #acLabel: acValue
+  
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  podAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  
+  topologySpreadConstraints: []
+    #- maxSkew: 1
+    #  topologyKey: topology.kubernetes.io/zone
+    #  whenUnsatisfiable: DoNotSchedule
+    #- maxSkew: 1
+    #  topologyKey: kubernetes.io/hostname
+    #  whenUnsatisfiable: ScheduleAnyway
+  
+  # for Taints and Tolerations  
+  tolerations: [] 
+  #- key: "key1"
+  #  operator: "Equal"
+  #  value: "value1"
+  #  effect: "NoExecute"
+  #  tolerationSeconds: 3600
+  #- key: "key2"
+  #  operator: "Exists"
+  #  effect: "NoSchedule"  
+
+  #To provide additional secrets inside application. If mountAsVolume is set to true, secret will be mounted as volume under /ibm/resources/<secretName> directory
+  #else it will exposed as environment variable
+  extraSecrets: []
+    #- mountAsVolume: true
+    #  secretName: jms-truststore
+    #- mountAsVolume: true
+    #  secretName: db-truststore
+
+  #To provide additional configmaps inside application. If mountAsVolume is set to true, configmap will be mounted as volume under /ibm/resources/<configMapName> directory
+  #else it will exposed as environment variable
+  extraConfigMaps: []
+    #- mountAsVolume: true
+    #  configMapName: my-configmap-1
+    #- mountAsVolume: false
+    #  configMapName: my-configmap-2
+
+  #If myFG is hosted on HTTP Server adapter on AC server, provide the internal port/protocol details used while configuring that.
+  myFgAccess:
+    myFgPort:
+    myFgProtocol:
+  
+  hostAliases: []
+  #- ip: "127.0.0.1"
+  #  hostnames:
+  #  - "foo.local"
+  #  - "bar.local"
+  #- ip: "10.1.2.3"
+  #  hostnames:
+  #  - "foo.remote"
+  #  - "bar.remote"
+ 
+  performanceTuning:
+    allocateMemToSAP: false
+    
+  networkPolicies:
+    ingress:
+      customPolicies:
+        - name: np-ingress-allow-ac-adapters
+          ports:
+            - protocol: TCP
+              port: 30501
+            - protocol: TCP
+              port: 30502
+            - protocol: TCP
+              port: 30503
+            - protocol: TCP
+              port: 30504
+            - protocol: TCP
+              port: 30505
+            - protocol: TCP
+              port: 30506
+            - protocol: TCP
+              port: 30507
+            - protocol: TCP
+              port: 30508
+            - protocol: TCP
+              port: 30509
+            - protocol: TCP
+              port: 30510
+            - protocol: TCP
+              port: 30511
+            - protocol: TCP
+              port: 30512
+            - protocol: TCP
+              port: 30513
+            - protocol: TCP
+              port: 30514
+            - protocol: TCP
+              port: 30515
+            - protocol: TCP
+              port: 30516
+            - protocol: TCP
+              port: 30517
+            - protocol: TCP
+              port: 30518
+            - protocol: TCP
+              port: 30519
+            - protocol: TCP
+              port: 30520
+            - protocol: TCP
+              port: 30521
+            - protocol: TCP
+              port: 30522
+            - protocol: TCP
+              port: 30523
+            - protocol: TCP
+              port: 30524
+            - protocol: TCP
+              port: 30525
+            - protocol: TCP
+              port: 30526
+            - protocol: TCP
+              port: 30527
+            - protocol: TCP
+              port: 30528
+            - protocol: TCP
+              port: 30529
+            - protocol: TCP
+              port: 30530
+            - protocol: TCP
+              port: 30531
+            - protocol: TCP
+              port: 30532
+            - protocol: TCP
+              port: 30533
+            - protocol: TCP
+              port: 30534
+            - protocol: TCP
+              port: 30535
+            - protocol: TCP
+              port: 30536
+            - protocol: TCP
+              port: 30537
+            - protocol: TCP
+              port: 30538
+            - protocol: TCP
+              port: 30539
+            - protocol: TCP
+              port: 30540
+            - protocol: TCP
+              port: 30541
+            - protocol: TCP
+              port: 30542
+            - protocol: TCP
+              port: 30543
+            - protocol: TCP
+              port: 30544
+            - protocol: TCP
+              port: 30545
+            - protocol: TCP
+              port: 30546
+            - protocol: TCP
+              port: 30547
+            - protocol: TCP
+              port: 30548
+            - protocol: TCP
+              port: 30549
+            - protocol: TCP
+              port: 30550
+            - protocol: TCP
+              port: 30551
+            - protocol: TCP
+              port: 30552
+            - protocol: TCP
+              port: 30553
+            - protocol: TCP
+              port: 30554
+            - protocol: TCP
+              port: 30555
+            - protocol: TCP
+              port: 30556
+            - protocol: TCP
+              port: 30557
+            - protocol: TCP
+              port: 30558
+            - protocol: TCP
+              port: 30559
+            - protocol: TCP
+              port: 30560
+            - protocol: TCP
+              port: 30561
+            - protocol: TCP
+              port: 30562
+            - protocol: TCP
+              port: 30563
+            - protocol: TCP
+              port: 30564
+            - protocol: TCP
+              port: 30565
+            - protocol: TCP
+              port: 30566
+            - protocol: TCP
+              port: 30567
+            - protocol: TCP
+              port: 30568
+            - protocol: TCP
+              port: 30569
+            - protocol: TCP
+              port: 30570
+            - protocol: TCP
+              port: 30571
+            - protocol: TCP
+              port: 30572
+            - protocol: TCP
+              port: 30573
+            - protocol: TCP
+              port: 30574
+            - protocol: TCP
+              port: 30575
+            - protocol: TCP
+              port: 30576
+            - protocol: TCP
+              port: 30577
+            - protocol: TCP
+              port: 30578
+            - protocol: TCP
+              port: 30579
+            - protocol: TCP
+              port: 30580
+            - protocol: TCP
+              port: 30581
+            - protocol: TCP
+              port: 30582
+            - protocol: TCP
+              port: 30583
+            - protocol: TCP
+              port: 30584
+            - protocol: TCP
+              port: 30585
+            - protocol: TCP
+              port: 30586
+            - protocol: TCP
+              port: 30587
+            - protocol: TCP
+              port: 30588
+            - protocol: TCP
+              port: 30589
+            - protocol: TCP
+              port: 30590
+            - protocol: TCP
+              port: 30591
+            - protocol: TCP
+              port: 30592
+            - protocol: TCP
+              port: 30593
+            - protocol: TCP
+              port: 30594
+            - protocol: TCP
+              port: 30595
+            - protocol: TCP
+              port: 30596
+            - protocol: TCP
+              port: 30597
+            - protocol: TCP
+              port: 30598
+            - protocol: TCP
+              port: 30599
+            - protocol: TCP
+              port: 30600
+    egress:
+      customPolicies:
+      #- name:
+      #  toSelectors:
+      #  - namespaceSelector:
+      #      matchLabels:
+      #        name: my-source-namespace
+      #    podSelector:
+      #      matchLabels:
+      #        app.kubernetes.io/name: my-consumer-pod
+      #  - podSelector:
+      #      matchLabels:
+      #        role: frontend
+      #  - ipBlock:
+      #      cidr: <IP Address>/<block size>
+      #      except:
+      #      - <IP Address>/<block size>
+      #  ports:
+      #   - protocol: TCP
+      #     port: 8443
+      #     endPort: 8450
+    
+api:
+  replicaCount: 1
+
+  env:
+    #It will be deprecated in future release. Instead use config/jvm.options file to override or add any additional jvm configuration.
+    jvmOptions:
+    extraEnvs: []
+    
+  frontendService:
+    type: ClusterIP
+    sessionAffinityConfig:
+      timeoutSeconds: 10800
+    externalTrafficPolicy: Cluster
+    ports:
+      http:
+        name: http
+        port: 35005
+        targetPort: http
+        nodePort: 30005
+        protocol: TCP
+      https:
+        name: https
+        port: 35006
+        targetPort: https
+        nodePort: 30006
+        protocol: TCP
+    extraPorts: []
+      #-name: http-1
+      # port: 35000
+      # targetPort: http
+      # nodePort: 30300
+      # protocol: TCP
+    loadBalancerIP:  
+    loadBalancerSourceRanges: []
+      #- "143.231.0.0/16"
+    annotations: {}  
+  
+  livenessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 60
+    
+  readinessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 60
+    command:
+    arg: []
+      #- arg1
+      #- arg2
+      
+  internalAccess:
+    enableHttps: true
+    tlsSecretName:
+
+  externalAccess:
+    protocol: http
+    address: 
+    port: 
+
+  ingress:
+    internal:
+      host: "api.dev01.apps.66fcceab098387a350aadb61.ocp.techzone.ibm.com"
+      tls:
+        enabled: true
+        secretName: ""
+
+  extraPVCs: []
+
+  extraInitContainers: []
+
+  resources: 
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+      ephemeral-storage: "4Gi"
+    requests:
+      cpu: 2000m
+      memory: 2Gi
+      ephemeral-storage: "2Gi"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 60
+    
+  defaultPodDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+  
+  extraLabels: {}
+    #apiLabel: apiValue
+  
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  podAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+  
+  topologySpreadConstraints: []
+    #- maxSkew: 1
+    #  topologyKey: topology.kubernetes.io/zone
+    #  whenUnsatisfiable: DoNotSchedule
+    #- maxSkew: 1
+    #  topologyKey: kubernetes.io/hostname
+    #  whenUnsatisfiable: ScheduleAnyway
+    
+  tolerations: [] 
+  #- key: "key1"
+  #  operator: "Equal"
+  #  value: "value1"
+  #  effect: "NoExecute"
+  #  tolerationSeconds: 3600
+  #- key: "key2"
+  #  operator: "Exists"
+  #  effect: "NoSchedule"  
+
+  extraSecrets: []
+    #- mountAsVolume: true
+    #  secretName: jms-truststore
+    #- mountAsVolume: true
+    #  secretName: db-truststore
+
+  extraConfigMaps: []
+    #- mountAsVolume: true
+    #  configMapName: my-configmap-1
+    #- mountAsVolume: false
+    #  configMapName: my-configmap-2
+  
+  hostAliases: []
+  #- ip: "127.0.0.1"
+  #  hostnames:
+  #  - "foo.local"
+  #  - "bar.local"
+  #- ip: "10.1.2.3"
+  #  hostnames:
+  #  - "foo.remote"
+  #  - "bar.remote"
+  
+  networkPolicies:
+    ingress:
+      customPolicies:
+      #- name:
+      #  fromSelectors:
+      #  - namespaceSelector:
+      #      matchLabels:
+      #        name: my-source-namespace
+      #    podSelector:
+      #      matchLabels:
+      #        app.kubernetes.io/name: my-consumer-pod
+      #  - podSelector:
+      #      matchLabels:
+      #        role: frontend
+      #  - ipBlock:
+      #      cidr: <IP Address>/<block size>
+      #      except:
+      #      - <IP Address>/<block size>
+      #  ports:
+      #   - protocol: TCP
+      #     port: 8443
+      #     endPort: 8450       
+    egress:
+      customPolicies:
+      #- name:
+      #  toSelectors:
+      #  - namespaceSelector:
+      #      matchLabels:
+      #        name: my-source-namespace
+      #    podSelector:
+      #      matchLabels:
+      #        app.kubernetes.io/name: my-consumer-pod
+      #  - podSelector:
+      #      matchLabels:
+      #        role: frontend
+      #  - ipBlock:
+      #      cidr: <IP Address>/<block size>
+      #      except:
+      #      - <IP Address>/<block size>
+      #  ports:
+      #   - protocol: TCP
+      #     port: 8443
+      #     endPort: 8450
+
+nameOverride: ""
+
+fullnameOverride: ""
+
+# Test container
+test:
+  image:
+    repository: 'cp.icr.io/cp/opencontent-common-utils'
+    tag: "1.1.66"
+    digest:
+    pullPolicy: 'IfNotPresent'
+
+purge:
+  enabled: true
+  image:
+    repository: "cp.icr.io/cp/ibm-b2bi/b2bi-purge"
+    tag: "6.2.0.3"
+    digest:
+    pullPolicy: IfNotPresent
+    pullSecret: "si-ibm-registry"
+    extraLabels: {}
+  # Provide a schedule for the purge job as a cron expression. For example "0 0 * * *" will run the purge job at 00:00 every day
+  schedule: "0 0 * * *"
+  startingDeadlineSeconds: 60
+  activeDeadlineSeconds: 3600
+  concurrencyPolicy: Forbid
+  suspend: false
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  env:
+    jvmOptions:
+    extraEnvs: []
+  
+  internalAccess:
+    enableHttps: true
+    tlsSecretName: 
+
+  resources: 
+    limits:
+      cpu: 500m
+      memory: 1Gi
+      ephemeral-storage: "1Gi"
+    requests:
+      cpu: 100m
+      memory: 500Mi 
+      ephemeral-storage: "500Mi"
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution: []
+
+documentService:
+  enabled: false
+  sslEnabled: true
+  useGrpc: true
+  readBufferSize: 32768
+  grpcPoolSize: 150
+  keepAliveGrpc: 300
+  license: false
+  replicaCount: 1
+  image:
+    repository: cp.icr.io/cp/ibm-b2bi/b2bi-documentservice
+    pullPolicy: IfNotPresent
+    tag: "1.0.0.3"
+    digest:
+    pullSecret: "si-ibm-registry"
+  serviceAccount:
+    name: default
+  application:
+    server:
+      ssl:
+        enabled: true
+        tlsSecretName: 
+        trustStoreSecretName:
+        clientAuth: want
+    logging:
+      level: ERROR
+  objectstore:
+    name:  
+    endpoint: 
+    namespace: 
+    region: 
+    secretName: 
+    useKeysFromSecrets: false 
+  connectionPoolConfig:
+    maxTotalConnections: 250
+    maxConnectionsPerRoute: 100
+    connectTimeout: 10000
+    readTimeout: 60000
+    idleTimeout: 60000
+    idleMonitorThread: true
+    waitTimeout: 30000
+    keepAlive: 300000
+    retryCount: 2
+    disableContentCompression: true
