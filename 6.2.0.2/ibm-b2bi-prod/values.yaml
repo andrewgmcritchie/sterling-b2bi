@@ -39,7 +39,7 @@ persistence:
 
 appResourcesPVC:
   enabled: false     # must be false if resourcesInit is true
-  storageClassName: "ocs-storagecluster-cephfs"
+  storageClassName: "managed-nfs-storage"
   selector:
     label: ""
     value: ""
@@ -50,7 +50,7 @@ appResourcesPVC:
 
 appLogsPVC:
   enabled: true
-  storageClassName: "ocs-storagecluster-cephfs"
+  storageClassName: "managed-nfs-storage"
   selector:
     label: ""
     value: ""
@@ -60,7 +60,7 @@ appLogsPVC:
   
 appDocumentsPVC:
   enabled: false
-  storageClassName: "ocs-storagecluster-cephfs"
+  storageClassName: "managed-nfs-storage"
   selector:
     label: ""
     value: ""
@@ -85,7 +85,7 @@ ingress:
   port:
 
 dataSetup:
-  enabled: true
+  enabled: false
   upgrade: false
   image:
     repository: "cp.icr.io/cp/ibm-b2bi/b2bi-dbsetup"
@@ -124,7 +124,7 @@ integrations:
     dataPVC:
       name: itxdata
       useDynamicProvisioning: true  
-      storageClassName: "ocs-storagecluster-cephfs"
+      storageClassName: "managed-nfs-storage"
       selector:
         label: ""
         value: ""
@@ -134,7 +134,7 @@ integrations:
     logsPVC:
       name: itxlogs
       useDynamicProvisioning: true
-      storageClassName: "ocs-storagecluster-cephfs"
+      storageClassName: "managed-nfs-storage"
       selector:
         label: ""
         value: ""
@@ -157,7 +157,7 @@ integrations:
       digest:
       pullPolicy: IfNotPresent
       pullSecret: "si-ibm-registry"
-    appSecret: "{'changed': True, 'result': {'kind': 'Secret', 'apiVersion': 'v1', 'metadata': {'name': 'si-itxa-secret', 'namespace': 'sterling-b2bi-dev01-app', 'uid': '96651826-18f1-4446-8128-00ce4a6fc2ca', 'resourceVersion': '1176269', 'creationTimestamp': '2024-10-01T17:32:05Z', 'managedFields': [{'manager': 'OpenAPI-Generator', 'operation': 'Update', 'apiVersion': 'v1', 'time': '2024-10-01T17:32:05Z', 'fieldsType': 'FieldsV1', 'fieldsV1': {'f:data': {'.': {}, 'f:ITXA_PASSWORD': {}}, 'f:type': {}}}]}, 'data': {'ITXA_PASSWORD': 'passw0rd'}, 'type': 'Opaque'}, 'method': 'create', 'failed': False}"
+    appSecret: "{'changed': True, 'result': {'kind': 'Secret', 'apiVersion': 'v1', 'metadata': {'name': 'si-itxa-secret', 'namespace': 'sterling-b2bi-dev01-app', 'uid': '941b8847-14a2-4018-8f10-f1b86e25bc52', 'resourceVersion': '68216', 'creationTimestamp': '2024-10-03T00:00:58Z', 'managedFields': [{'manager': 'OpenAPI-Generator', 'operation': 'Update', 'apiVersion': 'v1', 'time': '2024-10-03T00:00:58Z', 'fieldsType': 'FieldsV1', 'fieldsV1': {'f:data': {'.': {}, 'f:ITXA_PASSWORD': {}}, 'f:type': {}}}]}, 'data': {'ITXA_PASSWORD': 'passw0rd'}, 'type': 'Opaque'}, 'method': 'create', 'failed': False}"
     secureDBConnection:
       enabled: false
       dbservercertsecretname: ""
@@ -367,7 +367,7 @@ asi:
     
   ingress:
     internal:
-      host: "asi.dev01.apps.66fafeab7658ddb185cbafec.ocp.techzone.ibm.com"
+      host: "asi.dev01.apps.66fdc5d0098387a350aadd59.ocp.techzone.ibm.com"
       tls:
         enabled: true
         secretName: ""
@@ -627,7 +627,7 @@ ac:
       
   ingress:
     internal:
-      host: "ac.dev01.apps.66fafeab7658ddb185cbafec.ocp.techzone.ibm.com"
+      host: "ac.dev01.apps.66fdc5d0098387a350aadd59.ocp.techzone.ibm.com"
       tls:
         enabled: true
         secretName: ""
@@ -1035,7 +1035,7 @@ api:
 
   ingress:
     internal:
-      host: "api.dev01.apps.66fafeab7658ddb185cbafec.ocp.techzone.ibm.com"
+      host: "api.dev01.apps.66fdc5d0098387a350aadd59.ocp.techzone.ibm.com"
       tls:
         enabled: true
         secretName: ""
